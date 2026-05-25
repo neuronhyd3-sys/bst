@@ -1,99 +1,137 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { EntityContentBlueprint } from '@backstage/plugin-catalog-react/alpha';
 import { useEntity } from '@backstage/plugin-catalog-react';
-import { Box, Card, CardContent, Chip, Grid, Typography } from '@material-ui/core';
+import { Button, Box, Typography } from '@mui/material';
+import { InfoCard } from '@backstage/core-components';
+import { MockUser, ProductionRequest } from '../../interfaces';
+import { RaiseRequestForm, NewRequestInput } from '../components/RaiseRequestForm';
+import { RequestList } from '../components/RequestList';
+import { useProductionRequestsApi } from '../api/ProductionRequests';
+import { RequestDetail } from '../components/RequestListDetail';
+const mockUsers: MockUser[] = [
+  { id: 'Pramod Reddy', name: 'Pramod Reddy', email: 'pramod.reddy@example.com', group: 'chat-api-team', label: 'Pramod Reddy (Chat API Team)' },
+  { id: 'Prashant Devadiga', name: 'Prashant Devadiga', email: 'prashant.devadiga@example.com', group: 'manager-approvers', label: 'Prashant Devadiga (Manager Approvers)' },
+  { id: 'Akshit Saini', name: 'Akshit Saini', email: 'akshit.saini@example.com', group: 'mlops-team', label: 'Akshit Saini (MlOps Team)' },
+  { id: 'Hritik Kadam', name: 'Hritik Kadam', email: 'hritik.kadam@example.com', group: 'qa-signoff-team', label: 'Hritik Kadam (Staging Sign-Off Team)' },
+];
 
-const TestServiceDashboard = () => {
+const ProductionRequestsPage = () => {
   const { entity } = useEntity();
+  const api = useProductionRequestsApi();
+  const apiRef = `api:default/${entity.metadata.name}`;
 
-  const isTestService =
-    entity.kind.toLowerCase() === 'component' &&
-    entity.metadata.name === 'test-service';
+  const [currentUserId, setCurrentUserId] = useState(mockUsers[0].id);
+  const [mode, setMode] = useState<'list' | 'create'>('list');
+  const [requests, setRequests] = useState<ProductionRequest[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!isTestService) {
-    return (
-      <Box p={3}>
-        <Typography variant="h6">No custom dashboard configured</Typography>
-        <Typography variant="body2">
-          This custom page is currently configured only for test-service.
-        </Typography>
-      </Box>
-    );
-  }
+  const currentUser = mockUsers.find(u => u.id === currentUserId) ?? mockUsers[0];
 
-  const tags = entity.metadata.tags ?? [];
+  const loadRequests = useCallback(async () => {
+    try {
+      setRequests(await api.list(apiRef));
+      setError(null);
+    } catch (e) {
+      setError(String(e));
+    }
+  }, [api, apiRef]);
+
+  useEffect(() => { void loadRequests(); }, [loadRequests]);
+
+  const handleCreate = async (input: NewRequestInput) => {
+    setBusy(true);
+    try {
+      await api.create({ apiRef, requestedBy: currentUser.name, ...input });
+      setMode('list');
+      await loadRequests();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const runTransition = async (id: string, action: string) => {
+    setBusy(true);
+    try {
+      await api.transition(id, { action, actorGroup: currentUser.group, actor: currentUser.name });
+      await loadRequests();
+    } catch (e) {
+      setError(String(e)); // shows the 409 reason from the backend
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const selected = requests.find(r => r.id === selectedId) ?? null;
 
   return (
-    <Box p={3}>
-      <Typography variant="h4" gutterBottom>
-        {entity.metadata.name}
-      </Typography>
+    <div style={{ padding: 24 }}>
+      <h1>Production Requests</h1>
 
-      <Typography variant="body1" gutterBottom>
-        {entity.metadata.description ?? 'No description available'}
-      </Typography>
+      <div style={{ marginTop: 24, marginBottom: 24 }}>
+        <label>
+          Current user:{' '}
+          <select value={currentUserId} onChange={e => setCurrentUserId(e.target.value)}>
+            {mockUsers.map(u => <option key={u.id} value={u.id}>{u.label}</option>)}
+          </select>
+        </label>
+        <p>Logged in as <strong>{currentUser.name}</strong> ({currentUser.group})</p>
+      </div>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Service Details</Typography>
-              <Typography variant="body2">
-                Owner: {String(entity.spec?.owner ?? 'unknown')}
-              </Typography>
-              <Typography variant="body2">
-                System: {String(entity.spec?.system ?? 'unknown')}
-              </Typography>
-              <Typography variant="body2">
-                Type: {String(entity.spec?.type ?? 'unknown')}
-              </Typography>
-              <Typography variant="body2">
-                Lifecycle: {String(entity.spec?.lifecycle ?? 'unknown')}
-              </Typography>
+      {error && <Typography color="error" gutterBottom>{error}</Typography>}
 
-              <Box mt={2}>
-                {tags.map(tag => (
-                  <Chip key={tag} label={tag} style={{ marginRight: 8 }} />
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+      {selected ? (
+        <RequestDetail request={selected} onBack={() => setSelectedId(null)} />
+      ) : (
+        <>
+          {currentUser.group === 'chat-api-team' &&
+            (mode === 'create' ? (
+              <RaiseRequestForm
+                apiName={entity.metadata.name}
+                requestedBy={currentUser.name}
+                onSubmit={handleCreate}
+                onCancel={() => setMode('list')}
+              />
+            ) : (
+              <Button variant="contained" onClick={() => setMode('create')}>
+                Raise New Request
+              </Button>
+            ))}
 
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">CI/CD</Typography>
-              <Typography variant="body2">
-                Jenkins job:{' '}
-                {entity.metadata.annotations?.['jenkins.io/job-full-name'] ??
-                  'not configured'}
-              </Typography>
-              <Typography variant="body2">
-                This page is where we can later embed Jenkins build status.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
+          <Box mt={2}>
+            <InfoCard title="Requests">
+              <RequestList
+                requests={requests}
+                canApprove={currentUser.group === 'manager-approvers'}
+                busy={busy}
+                onOpen={setSelectedId}
+                onApprove={id => runTransition(id, 'APPROVE')}
+                onReject={id => runTransition(id, 'REJECT')}
+              />
+            </InfoCard>
+          </Box>
+        </>
+      )}
+    </div>
   );
 };
 
-const testServiceDashboardContent = EntityContentBlueprint.make({
-  name: 'test-service-dashboard',
+const productionRequestsContent = EntityContentBlueprint.make({
+  name: 'production-requests',
   params: {
-    path: '/test-dashboard',
-    title: 'Test Dashboard',
+    path: '/production-requests',
+    title: 'Production Requests',
     filter: entity =>
-      entity.kind.toLowerCase() === 'component' &&
-      entity.metadata.name === 'test-service',
-    loader: async () => <TestServiceDashboard />,
+      entity.kind.toLowerCase() === 'api' && entity.metadata.name === 'chat-api',
+    loader: async () => <ProductionRequestsPage />,
   },
 });
 
 export const catalogModule = createFrontendModule({
   pluginId: 'catalog',
-  extensions: [testServiceDashboardContent],
+  extensions: [productionRequestsContent],
 });

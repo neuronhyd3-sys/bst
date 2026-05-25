@@ -1,0 +1,92 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: chat-api-team
+  description: Team that work on chat api feature for upi help
+spec:
+  type: team
+  profile:
+    displayName: Chat API Team
+  parent: npci
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: manager-approvers
+  description: Managers who approve production requests
+spec:
+  type: team
+  profile:
+    displayName: Manager Approvers
+  parent: npci
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: Mlops Team
+  description: MlOps team that runs Jenkins and ArgoCD deployment steps
+spec:
+  type: team
+  profile:
+    displayName: MlOps Team
+  parent: npci
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: staging-signoff-team
+  description: Testing team that signs off staging deployments
+spec:
+  type: team
+  profile:
+    displayName: Staging Sign-Off Team
+  parent: npci
+  children: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: Pramod Reddy
+spec:
+  profile:
+    displayName: Pramod Reddy
+    email: pramod.reddy@example.com
+  memberOf:
+    - chat-api-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: Prashant Devadiga
+spec:
+  profile:
+    displayName: Prashant Devadiga
+    email: prashant.devadiga@example.com
+  memberOf:
+    - manager-approvers
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: Akshit Saini
+spec:
+  profile:
+    displayName: Akshit Saini
+    email: akshit.saini@example.com
+  memberOf:
+    - mlops-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: Hrithik Kadam
+spec:
+  profile:
+    displayName: Hrithik Kadam
+    email: hrithik.kadam@example.com
+  memberOf:
+    - staging-signoff-team

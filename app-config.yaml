@@ -145,6 +145,17 @@ catalog:
       rules:
         - allow: [Resource]
 
+    - type: file
+      target: ../../examples/release-workflow-org.yaml
+      rules:
+        - allow: [Group]
+
+
+    - type: file
+      target: ../../examples/chat-api.yaml
+      rules:
+        - allow: [API]
+
     ## Uncomment these lines to add more example data
     # - type: url
     #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
@@ -167,3 +178,6 @@ permission:
 mcpActions:
   name: 'My Company Backstage' # defaults to "backstage"
   description: 'Tools for managing your software catalog, creating new services from templates, and exploring your developer portal' # optional
+
+
+

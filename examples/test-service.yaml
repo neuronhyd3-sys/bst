@@ -14,5 +14,6 @@ spec:
   system: market-innovation
   providesApis:
     - test-service-api
+    - chat-api
   dependsOn:
   - resource:test-db

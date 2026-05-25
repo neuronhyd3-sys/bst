@@ -1,0 +1,32 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: chat-api
+  description: Dummy Chat Api for UPI Help 
+  annotations:
+    production-requests/enabled: 'true'
+    production-requests/api-team: group:default/chat-api-team
+    production-requests/manager-approver-group: group:default/manager-approvers
+    production-requests/ops-group: group:default/mlops-team
+    production-requests/qa-signoff-group: group:default/staging-signoff-team
+    # production-requests/staging-jenkins-job: test-service-staging-ci
+    # production-requests/prod-jenkins-job: test-service-prod-ci
+    # production-requests/staging-argocd-app: test-service-staging
+    # production-requests/prod-argocd-app: test-service-prod
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: npci
+  system: market-innovation
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: Chat API
+      version: 1.0.0
+    paths:
+      /health:
+        get:
+          summary: Health check endpoint
+          responses:
+            '200':
+              description: OK
