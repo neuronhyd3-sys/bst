@@ -12,7 +12,7 @@ app:
           path: /
 
 organization:
-  name: My Company
+  name: NPCI
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
@@ -120,6 +120,30 @@ catalog:
       target: ../../examples/org.yaml
       rules:
         - allow: [User, Group]
+
+    - type: file
+      target: ../../examples/test-service.yaml
+
+    - type: file
+      target: ../../examples/llm-team.yaml
+      rules:
+        - allow: [Group]
+
+
+    - type: file
+      target: ../../examples/market-innovation.yaml
+      rules:
+        - allow: [System]
+
+    - type: file
+      target: ../../examples/test-service-api.yaml
+      rules:
+        - allow: [API]
+
+    - type: file
+      target: ../../examples/test-db.yaml
+      rules:
+        - allow: [Resource]
 
     ## Uncomment these lines to add more example data
     # - type: url

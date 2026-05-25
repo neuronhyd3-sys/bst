@@ -1,0 +1,18 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: test-service
+  description: My first service registered in Backstage
+  tags:
+    - nodejs
+    - express
+    - learning
+spec:
+  type: service
+  lifecycle: experimental
+  owner: llm-team
+  system: market-innovation
+  providesApis:
+    - test-service-api
+  dependsOn:
+  - resource:test-db

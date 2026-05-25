@@ -1,0 +1,22 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: test-service-api
+  description: Demo API provided by test-service
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: npci
+  system: market-innovation
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: Test Service API
+      version: 1.0.0
+    paths:
+      /health:
+        get:
+          summary: Health check endpoint
+          responses:
+            '200':
+              description: OK

@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: llm-team
+  description: Learning team for Backstage practice
+spec:
+  type: team
+  profile:
+    displayName: LLM Team
+  children: []
